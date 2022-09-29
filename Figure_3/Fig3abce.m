@@ -158,6 +158,6 @@ text(1,0.16,['p = ' num2str(stats.p)],'HorizontalAlignment','center')
 stats = permtestnds(a(:,2), zeros(size(a(:,2))), 10000,0.05,'right');
 text(2,0.16,['p = ' num2str(stats.p)],'HorizontalAlignment','center')
 
-stats = permtestnds(a(:,1), a(:,2), 10000,0.05,'right');
+stats = permtestnds(a(:,1), a(:,2), 10000,0.05,'both');
 title(['p = ' num2str(stats.p)])
 
