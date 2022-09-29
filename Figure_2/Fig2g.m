@@ -1,4 +1,4 @@
-%% clear contents and add current folder with subfolders
+%% clear contents and add function folder with subfolders
 
 clear
 close all

@@ -1,4 +1,4 @@
-%% clear contents and add current folder with subfolders
+%% clear contents and add function folder with subfolders
 clear
 close all
 clc
@@ -6,7 +6,6 @@ clc
 homedir = mfilename('fullpath');
 funcdir = [homedir(1:end-19) 'functions'];
 addpath(genpath(funcdir))
-
 
 %% load the data
 
