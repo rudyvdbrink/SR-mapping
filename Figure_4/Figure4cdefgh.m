@@ -14,7 +14,6 @@ addpath(genpath(funcdir))
 load 'data_fig4cdefgh.mat'
 
 % Relevant variables are:
-
 % sublist: a list of participants corresponding to columns in the variables below
 % cacc_binned_all: accuracy locked to change points, and split by rule
 % cacc_binned_model_all: model accuracy locked to change points, and split by rule
@@ -100,7 +99,7 @@ set(gca,'xtick',-2:1,'XTickLabel',[-2 -1 1 2],'tickdir','out','fontsize',15)
 xlabel('Trial relative to change point')
 ylabel('P(choice consistent with rule 1)')
 
-%% Ffigure 4e
+%% Figure 4e
 
 figure
 hold on
