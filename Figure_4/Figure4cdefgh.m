@@ -14,7 +14,7 @@ addpath(genpath(funcdir))
 load 'data_fig4cdefgh.mat'
 
 % Relevant variables are:
-% sublist: a list of participants corresponding to columns in the variables below
+% sublist: a list of participants corresponding to rows in the variables below
 % cacc_binned_all: accuracy locked to change points, and split by rule
 % cacc_binned_model_all: model accuracy locked to change points, and split by rule
 % hall: The fitted H parameter, for all participants (hazard rate)
