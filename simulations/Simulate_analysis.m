@@ -8,17 +8,17 @@ addpath(genpath(funcdir))
 
 %% definitions
 
-nsecs   = 600; %length of the data to generate, in seconds
+nsecs   = 600;      %length of the data to generate, in seconds
 srate   = 1/1.9*50; %sample rate (1 / TR * upsample factor)
-nvox    = 10; %number of voxels
-mtrials = 100; %the maximum number of trials
-nl      = 0.5; %noise level (higher = more iid noise = lower classification accuracy)
-snratio = 4; %strength of noise correlations (higher = stronger noise correlations)
-nfolds  = 10; %number of cross-validation folds for classification
-nreps   = 100*2; %number of repetitions of the simulation (100 participants, 2 sessions each)
+nvox    = 10;       %number of voxels
+mtrials = 100;      %the maximum number of trials
+nl      = 0.5;      %noise level (higher = more iid noise = lower decoding accuracy)
+snratio = 4;        %strength of noise correlations (higher = stronger noise correlations)
+nfolds  = 10;       %number of cross-validation folds for decoding
+nreps   = 100*2;     %number of repetitions of the simulation (100 participants, 2 sessions each)
 pcorr   = [95 100]; %range of percentage correct trials
 
-% params: structure with parameters for the simulation
+%params: structure with parameters for the simulation
 params.nsecs    = nsecs;
 params.srate    = srate;
 params.nvox     = nvox;
@@ -30,7 +30,7 @@ params.snratio  = snratio;
 %initialize
 nr1  = nan(nreps,1); %decoder correlations (rule 1)
 nr2  = nan(nreps,1); %decoder correlations (rule 2)
-accs = nan(nreps,2); %classification accuracy in percent, for stimulus (column 1) and action (column 2)
+accs = nan(nreps,2); %decoding accuracy in percent, for stimulus (column 1) and action (column 2)
 
 pc = nan(nreps,1); %percentage correct
 ne = nan(nreps,1); %number of error trials
@@ -42,17 +42,17 @@ for repi = 1:nreps
     
     %% randomly sample hrf parameters
     
-    % p(1) - delay of response (relative to onset)          6
-    % p(2) - delay of undershoot (relative to onset)       16
-    % p(3) - dispersion of response                         1
-    % p(4) - dispersion of undershoot                       1
-    % p(5) - ratio of response to undershoot                6
-    % p(6) - onset (seconds)                                0
-    % p(7) - length of kernel (seconds)                    32
+    %p(1) - delay of response (relative to onset)        3-6
+    %p(2) - delay of undershoot (relative to onset)     7-15
+    %p(3) - dispersion of response                         1
+    %p(4) - dispersion of undershoot                       1
+    %p(5) - ratio of response to undershoot              3-8
+    %p(6) - onset (seconds)                                0
+    %p(7) - length of kernel (seconds)                    32
     p   = [randsample(3:0.001:6,1) randsample(7:0.001:15,1) 1 1 randsample(3:0.001:8,1) 0 32];
     hrf = spm_hrf(1/srate,p,16);
     hrf = hrf./max(hrf); %scale to max = 1   
-    params.hrf      = hrf;    
+    params.hrf = hrf;    
     
     %% generate stimulus, response, and rule sequence
     
@@ -101,24 +101,24 @@ for repi = 1:nreps
 
     %visual cortex
     [dat, t, cvec]     = FR_gen_data(stiminfo,params,2);                 % generate data
-    dat                = FR_dusample(dat,50); %downsample data, then upsample again (to simuluate low sample rate of the real fMRI data)
+    dat                = FR_dusample(dat,50); % downsample data, then upsample again (to simuluate low sample rate of the real fMRI data)
     es_hrf             = FR_get_hrf(dat,t,stiminfo,length(hrf));         % estimate HRF from the data in V1
     betas              = FR_get_betas(dat,stiminfo,t,es_hrf);            % run single-trial regression to get betas
-    accs(repi,1)       = FR_run_classification(betas,stiminfo,2,nfolds); % get classification accuracy for stimulus
-    vprob              = FR_backproject(dat,betas,stiminfo,t,2,1);       % get graded classifier output in residual    
+    accs(repi,1)       = FR_run_classification(betas,stiminfo,2,nfolds); % get decoding accuracy for stimulus
+    vprob              = FR_backproject(dat,betas,stiminfo,t,2,1);       % get graded decoder output in residual    
     
-    params.nl       = 0.25; %lower noise level for motor cortex (= higher classification accuracy)
+    params.nl       = 0.25; %lower noise level for motor cortex (= higher decoding accuracy)
    
     %motor cortex
     [dat, t, cvec, rv] = FR_gen_data(stiminfo,params,3,cvec);            % generate data
-    dat                = FR_dusample(dat,50); %downsample data, then upsample again (to simuluate low sample rate of the real fMRI data)
+    dat                = FR_dusample(dat,50); % downsample data, then upsample again (to simuluate low sample rate of the real fMRI data)
     betas              = FR_get_betas(dat,stiminfo,t,es_hrf);            % run single-trial regression to get betas
-    accs(repi,2)       = FR_run_classification(betas,stiminfo,3,nfolds); % get classification accuracy for response
-    mprob              = FR_backproject(dat,betas,stiminfo,t,3,1);       % get graded classifier output in residual   
+    accs(repi,2)       = FR_run_classification(betas,stiminfo,3,nfolds); % get decoding accuracy for action
+    mprob              = FR_backproject(dat,betas,stiminfo,t,3,1);       % get graded decoder output in residual   
     
     %% correlate graded decoder output per rule 
     
-    rv = conv(rv,hrf); %convolve rule vector with HRF
+    rv = conv(rv,es_hrf); %convolve rule vector with HRF
     rv = sign(rv(1:length(t))); %get (shifted) rule vector
     
     r1idx = rv == 1;
@@ -136,7 +136,7 @@ accs  = nanmean(cat(3,accs(1:2:end,:),accs(2:2:end,:)),3);
 nr1   = nanmean(cat(2,nr1(1:2:end),nr1(2:2:end)),2);
 nr2   = nanmean(cat(2,nr2(1:2:end),nr2(2:2:end)),2);
 
-%% plot classification accuracy
+%% plot decoding accuracy
 
 figure
 
@@ -151,6 +151,9 @@ ylim([0 100])
 hold on
 plot([0 3],[50 50],'k--')
 ylabel('Cross-validated decoding accuracy (%)')
+[~, p] = permtestn(accs,50,10000,0.05,'right');
+text(1,90,['p = ' num2str(p(1))],'HorizontalAlignment','center','VerticalAlignment','middle');
+text(2,95,['p = ' num2str(p(2))],'HorizontalAlignment','center','VerticalAlignment','middle');
 
 %% plot correlated decoder outputs
 
@@ -161,9 +164,9 @@ wse([nr1 nr2],1);
 box off
 set(gca,'tickdir','out')
 [~, p] = permtestn(nr1,nr2,10000,0.05,'right');
-text(1.5,0.15,num2str(p),'HorizontalAlignment','center','VerticalAlignment','middle');
+text(1.5,0.15,['p = ' num2str(p)],'HorizontalAlignment','center','VerticalAlignment','middle');
 [~, p] = permtestn([nr1 -1*nr2],0,10000,0.05,'right'); 
-text(1,0.05,num2str(p(1)),'HorizontalAlignment','center','VerticalAlignment','middle');
-text(2,-0.05,num2str(p(2)),'HorizontalAlignment','center','VerticalAlignment','middle');
+text(1,0.05,['p = ' num2str(p(1))],'HorizontalAlignment','center','VerticalAlignment','middle');
+text(2,-0.05,['p = '  num2str(p(2))],'HorizontalAlignment','center','VerticalAlignment','middle');
 xlabel('Rule')
 ylabel('Decoder output correlation')

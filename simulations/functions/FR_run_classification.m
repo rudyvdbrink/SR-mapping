@@ -47,7 +47,7 @@ for fi = 1:nfolds
     traindata = cat(1,traindata,traindata(idx,:));
     traintype = cat(1,traintype,traintype(idx));
     
-    % standardize training data    
+    % standardize 
     traindata = zscore(traindata);
     testdata  = zscore(testdata);   
     
