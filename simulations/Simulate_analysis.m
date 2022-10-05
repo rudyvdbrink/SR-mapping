@@ -18,7 +18,7 @@ nfolds  = 10; %number of cross-validation folds for classification
 nreps   = 100*2; %number of repetitions of the simulation (100 participants, 2 sessions each)
 pcorr   = [95 100]; %range of percentage correct trials
 
-%  params: structure with parameters for the simulation
+% params: structure with parameters for the simulation
 params.nsecs    = nsecs;
 params.srate    = srate;
 params.nvox     = nvox;
@@ -28,9 +28,9 @@ params.snratio  = snratio;
 %% loop over repetitions
 
 %initialize
-nr1  = nan(nreps,1); %with noise correlations (rule 1)
-nr2  = nan(nreps,1); %with noise correlations (rule 2)
-accs = nan(nreps,2); %classification accuracy in percent, for stimulus (column 1) and response (column 2)
+nr1  = nan(nreps,1); %decoder correlations (rule 1)
+nr2  = nan(nreps,1); %decoder correlations (rule 2)
+accs = nan(nreps,2); %classification accuracy in percent, for stimulus (column 1) and action (column 2)
 
 pc = nan(nreps,1); %percentage correct
 ne = nan(nreps,1); %number of error trials
@@ -165,6 +165,5 @@ text(1.5,0.15,num2str(p),'HorizontalAlignment','center','VerticalAlignment','mid
 [~, p] = permtestn([nr1 -1*nr2],0,10000,0.05,'right'); 
 text(1,0.05,num2str(p(1)),'HorizontalAlignment','center','VerticalAlignment','middle');
 text(2,-0.05,num2str(p(2)),'HorizontalAlignment','center','VerticalAlignment','middle');
-% ylim(yl)
 xlabel('Rule')
 ylabel('Decoder output correlation')
